@@ -52,10 +52,108 @@ class App():
 
                      
     def check_put(self,row,col):
-        if self.stage[row-1,col] == self.turn*-1:
-            return True
-        else:
-            return False
+        check = False
+        #左側をひっくり返す
+        if self.stage[row-1,col] == -self.turn:
+            row_tmp = row-2
+            col_tmp = col
+            while self.stage[row_tmp,col_tmp] == -self.turn:
+                row_tmp -= 1
+
+            if self.stage[row_tmp,col_tmp] == self.turn:
+                self.stage[row_tmp:row+1,col_tmp] = self.turn
+                check = True
+
+        #右側をひっくり返す
+        if self.stage[row+1,col] == -self.turn:
+            row_tmp = row+2
+            col_tmp = col
+            while self.stage[row_tmp,col_tmp] == -self.turn:
+                row_tmp += 1
+
+            if self.stage[row_tmp,col_tmp] == self.turn:
+                self.stage[row:row_tmp+1,col_tmp] = self.turn
+                check = True
+
+        #下側をひっくり返す
+        if self.stage[row,col+1] == -self.turn:
+            row_tmp = row
+            col_tmp = col+2
+            while self.stage[row_tmp,col_tmp] == -self.turn:
+                col_tmp += 1
+
+            if self.stage[row_tmp,col_tmp] == self.turn:
+                self.stage[row,col:col_tmp+1] = self.turn
+                check = True
+
+        #上側をひっくり返す
+        if self.stage[row,col-1] == -self.turn:
+            row_tmp = row
+            col_tmp = col-2
+            while self.stage[row_tmp,col_tmp] == -self.turn:
+                col_tmp -= 1
+
+            if self.stage[row_tmp,col_tmp] == self.turn:
+                self.stage[row,col_tmp:col+1] = self.turn
+                check = True
+
+        #左下をひっくり返す
+        counts = 2
+        if self.stage[row-1,col+1] == -self.turn:
+            row_tmp = row-2
+            col_tmp = col+2
+            while self.stage[row_tmp,col_tmp] == -self.turn:
+                row_tmp -= 1
+                col_tmp += 1
+                counts += 1
+            if self.stage[row_tmp,col_tmp] == self.turn:
+                for i in range(counts+1):
+                    self.stage[row-i,col+i] = self.turn
+                check = True
+
+        #左上をひっくり返す
+        counts = 2
+        if self.stage[row-1,col-1] == -self.turn:
+            row_tmp = row-2
+            col_tmp = col-2
+            while self.stage[row_tmp,col_tmp] == -self.turn:
+                row_tmp -= 1
+                col_tmp -= 1
+                counts += 1
+            if self.stage[row_tmp,col_tmp] == self.turn:
+                for i in range(counts+1):
+                    self.stage[row-i,col-i] = self.turn
+                check = True
+        
+        #右下をひっくり返す
+        counts = 2
+        if self.stage[row+1,col+1] == -self.turn:
+            row_tmp = row+2
+            col_tmp = col+2
+            while self.stage[row_tmp,col_tmp] == -self.turn:
+                row_tmp += 1
+                col_tmp += 1
+                counts += 1
+            if self.stage[row_tmp,col_tmp] == self.turn:
+                for i in range(counts+1):
+                    self.stage[row+i,col+i] = self.turn
+                check = True
+              
+        #右上をひっくり返す
+        counts = 2
+        if self.stage[row+1,col-1] == -self.turn:
+            row_tmp = row+2
+            col_tmp = col-2
+            while self.stage[row_tmp,col_tmp] == -self.turn:
+                row_tmp += 1
+                col_tmp -= 1
+                counts += 1
+            if self.stage[row_tmp,col_tmp] == self.turn:
+                for i in range(counts+1):
+                    self.stage[row+i,col-i] = self.turn
+                check = True
+
+        return check
 
 
     def update(self):
@@ -69,9 +167,9 @@ class App():
                 self.row = (self.x - 90)//60 
                 self.col = (self.y +10)//60
                 if self.stage[self.row,self.col] == 0:
-                    self.stage[self.row,self.col] = self.turn
                     self.check = self.check_put(self.row,self.col)
-                    self.turn *= -1
+                    if self.check == True:
+                        self.turn *= -1
 
     def draw(self):
         pyxel.cls(1)
@@ -91,6 +189,12 @@ class App():
         pyuni.text(0,1,"row{},col{}".format(self.row,self.col),0)
         pyuni.text(0,40,"{}".format(self.stage[self.row,self.col]),0)
         pyuni.text(0,80,"{}".format(self.check),0)
+
+        if self.turn == 1:
+            s = "BLACK"
+        else:
+            s = "WHITE"
+        pyuni.text(0,120,s,0)
         
 App()
 
