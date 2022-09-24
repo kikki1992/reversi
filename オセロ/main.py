@@ -1,5 +1,7 @@
 from ast import While
+from email.quoprimime import body_encode
 from pickle import FALSE, TRUE
+from queue import Empty
 from tabnanny import check
 import numpy as np
 import pyxel
@@ -29,7 +31,7 @@ class Board():
         self.RawBoard[BOARD_SIZE+1,:] = WALL
         #右の壁
         self.RawBoard[:,BOARD_SIZE+1] = WALL
-        
+        self.CheckBoard = self.RawBoard
         #初期位置
         self.RawBoard[4,4] = WHITE
         self.RawBoard[5,5] = WHITE
@@ -43,15 +45,107 @@ class App():
         pyxel.init(800,600,title="Reversi")
         self.board = Board()
         self.stage = self.board.RawBoard
+        self.check_board = self.board.CheckBoard
         self.turn = 1
         self.row = 0
         self.col = 0
         self.check = False
+        self.check_pos = self.available_pos()
         pyxel.mouse(True)
         pyxel.run(self.update,self.draw)
 
-                     
-    def check_put(self,row,col):
+    def available_pos(self):
+        available = []
+        for row in range(1,BOARD_SIZE+1):
+            for col in range(1,BOARD_SIZE+1):
+                #左側に反転させる石があるか
+                if self.stage[row-1,col] == -self.turn:
+                    row_tmp = row-2
+                    col_tmp = col
+                    while self.stage[row_tmp,col_tmp] == -self.turn:
+                        row_tmp -= 1
+                    if self.stage[row_tmp,col_tmp] == self.turn and self.stage[row,col] == EMPTY:
+                        pos = [row,col]
+                        available.append(pos)
+                        continue
+                #右側に反転させる石があるか
+                if self.stage[row+1,col] == -self.turn:
+                    row_tmp = row+2
+                    col_tmp = col
+                    while self.stage[row_tmp,col_tmp] == -self.turn:
+                        row_tmp += 1
+                    if self.stage[row_tmp,col_tmp] == self.turn and self.stage[row,col] == EMPTY:
+                        pos = [row,col]
+                        available.append(pos)
+                        continue
+                #下側に反転させる石が
+                if self.stage[row,col+1] == -self.turn:
+                    row_tmp = row
+                    col_tmp = col + 2
+                    while self.stage[row_tmp,col_tmp] == -self.turn:
+                        col_tmp += 1
+                    if self.stage[row_tmp,col_tmp] == self.turn and self.stage[row,col] == EMPTY:
+                        pos = [row,col]
+                        available.append(pos)
+                        continue
+                #上側に反転させる石が
+                if self.stage[row,col-1] == -self.turn:
+                    row_tmp = row
+                    col_tmp = col - 2
+                    while self.stage[row_tmp,col_tmp] == -self.turn:
+                        col_tmp -= 1
+                    if self.stage[row_tmp,col_tmp] == self.turn and self.stage[row,col] == EMPTY:
+                        pos = [row,col]
+                        available.append(pos)
+                        continue
+                #左上側に反転させる石が
+                if self.stage[row-1,col-1] == -self.turn:
+                    row_tmp = row-2
+                    col_tmp = col - 2
+                    while self.stage[row_tmp,col_tmp] == -self.turn:
+                        row_tmp -= 1
+                        col_tmp -= 1
+                    if self.stage[row_tmp,col_tmp] == self.turn and self.stage[row,col] == EMPTY:
+                        pos = [row,col]
+                        available.append(pos)
+                        continue
+                #右上側に反転させる石があるか
+                if self.stage[row+1,col-1] == -self.turn:
+                    row_tmp = row+2
+                    col_tmp = col - 2
+                    while self.stage[row_tmp,col_tmp] == -self.turn:
+                        row_tmp += 1
+                        col_tmp -= 1
+                    if self.stage[row_tmp,col_tmp] == self.turn and self.stage[row,col] == EMPTY:
+                        pos = [row,col]
+                        available.append(pos)
+                        continue
+                 #右下側に反転させる石があるか
+                if self.stage[row+1,col+1] == -self.turn:
+                    row_tmp = row+2
+                    col_tmp = col+2
+                    while self.stage[row_tmp,col_tmp] == -self.turn:
+                        row_tmp += 1
+                        col_tmp += 1
+                    if self.stage[row_tmp,col_tmp] == self.turn and self.stage[row,col] == EMPTY:
+                        pos = [row,col]
+                        available.append(pos)
+                        continue
+                #左下側に反転させる石があるか
+                if self.stage[row-1,col+1] == -self.turn:
+                    row_tmp = row-2
+                    col_tmp = col+2
+                    while self.stage[row_tmp,col_tmp] == -self.turn:
+                        row_tmp -= 1
+                        col_tmp += 1
+                    if self.stage[row_tmp,col_tmp] == self.turn and self.stage[row,col] == EMPTY:
+                        pos = [row,col]
+                        available.append(pos)
+                        continue
+
+        return available
+
+    def put_stone(self,row,col):
         check = False
         #左側をひっくり返す
         if self.stage[row-1,col] == -self.turn:
@@ -59,7 +153,7 @@ class App():
             col_tmp = col
             while self.stage[row_tmp,col_tmp] == -self.turn:
                 row_tmp -= 1
-
+    
             if self.stage[row_tmp,col_tmp] == self.turn:
                 self.stage[row_tmp:row+1,col_tmp] = self.turn
                 check = True
@@ -167,9 +261,10 @@ class App():
                 self.row = (self.x - 90)//60 
                 self.col = (self.y +10)//60
                 if self.stage[self.row,self.col] == 0:
-                    self.check = self.check_put(self.row,self.col)
+                    self.check = self.put_stone(self.row,self.col)
                     if self.check == True:
                         self.turn *= -1
+                        self.check_pos = self.available_pos()
 
     def draw(self):
         pyxel.cls(1)
@@ -186,6 +281,9 @@ class App():
                 elif self.stage[i,j] == WHITE:
                     pyxel.circ(120+i*60,20+j*60,20,7)
 
+        for i in self.check_pos:
+            pyxel.circ(120+i[0]*60,20+i[1]*60,5,2)
+
         pyuni.text(0,1,"row{},col{}".format(self.row,self.col),0)
         pyuni.text(0,40,"{}".format(self.stage[self.row,self.col]),0)
         pyuni.text(0,80,"{}".format(self.check),0)
@@ -194,7 +292,7 @@ class App():
             s = "BLACK"
         else:
             s = "WHITE"
-        pyuni.text(0,120,s,0)
+
         
 App()
 
