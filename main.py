@@ -1,9 +1,5 @@
 from ast import While
-from email.quoprimime import body_encode
-from mimetypes import init
-from pickle import FALSE, TRUE
-from queue import Empty
-from tabnanny import check
+
 import numpy as np
 import pyxel
 from pyxelunicode import PyxelUnicode
