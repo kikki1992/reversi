@@ -1,32 +1,18 @@
 import numpy as np
 import pyxel
-from pyxelunicode import PyxelUnicode
-
-# 0:空き枠、1:黒いし、-1: 白石、2:壁
-
-EMPTY = 0
-WHITE = -1
-BLACK = 1
-WALL = 2
-BOARD_SIZE = 8
-
-font_path = "assets/x14y20pxScoreDozer.ttf"
-font_size = 40
-
-pyuni = PyxelUnicode(font_path, font_size)
 
 class Board():
     def __init__(self):
+        EMPTY = 0
+        WHITE = -1
+        BLACK = 1
+        WALL = 2
+        BOARD_SIZE = 8
         self.RawBoard = np.zeros((BOARD_SIZE+2, BOARD_SIZE+2),dtype=int)
-        #上の壁
         self.RawBoard[0,:] = WALL
-        #左の壁
         self.RawBoard[:,0] = WALL
-        #下の壁
         self.RawBoard[BOARD_SIZE+1,:] = WALL
-        #右の壁
         self.RawBoard[:,BOARD_SIZE+1] = WALL
-        #初期位置
         self.RawBoard[4,4] = WHITE
         self.RawBoard[5,5] = WHITE
         self.RawBoard[5,4] = BLACK
@@ -35,8 +21,7 @@ class Board():
 
 class App():
     def __init__(self):
-        #Windowの作成(最初に設定)
-        pyxel.init(800,600,title="Reversi")
+        pyxel.init(120,160,title="Reversi")
         self.board = Board()
         self.stage = self.board.RawBoard
         self.turn = 1
@@ -51,10 +36,14 @@ class App():
         pyxel.run(self.update,self.draw)
 
     def available_pos(self):
+        EMPTY = 0
+        WHITE = -1
+        BLACK = 1
+        WALL = 2
+        BOARD_SIZE = 8
         available = []
         for row in range(1,BOARD_SIZE+1):
             for col in range(1,BOARD_SIZE+1):
-                #左側に反転させる石があるか
                 if self.stage[row-1,col] == -self.turn:
                     row_tmp = row-2
                     col_tmp = col
@@ -64,7 +53,6 @@ class App():
                         pos = [row,col]
                         available.append(pos)
                         continue
-                #右側に反転させる石があるか
                 if self.stage[row+1,col] == -self.turn:
                     row_tmp = row+2
                     col_tmp = col
@@ -74,7 +62,6 @@ class App():
                         pos = [row,col]
                         available.append(pos)
                         continue
-                #下側に反転させる石が
                 if self.stage[row,col+1] == -self.turn:
                     row_tmp = row
                     col_tmp = col + 2
@@ -84,7 +71,6 @@ class App():
                         pos = [row,col]
                         available.append(pos)
                         continue
-                #上側に反転させる石が
                 if self.stage[row,col-1] == -self.turn:
                     row_tmp = row
                     col_tmp = col - 2
@@ -94,7 +80,6 @@ class App():
                         pos = [row,col]
                         available.append(pos)
                         continue
-                #左上側に反転させる石が
                 if self.stage[row-1,col-1] == -self.turn:
                     row_tmp = row-2
                     col_tmp = col - 2
@@ -105,7 +90,6 @@ class App():
                         pos = [row,col]
                         available.append(pos)
                         continue
-                #右上側に反転させる石があるか
                 if self.stage[row+1,col-1] == -self.turn:
                     row_tmp = row+2
                     col_tmp = col - 2
@@ -116,7 +100,6 @@ class App():
                         pos = [row,col]
                         available.append(pos)
                         continue
-                 #右下側に反転させる石があるか
                 if self.stage[row+1,col+1] == -self.turn:
                     row_tmp = row+2
                     col_tmp = col+2
@@ -127,7 +110,6 @@ class App():
                         pos = [row,col]
                         available.append(pos)
                         continue
-                #左下側に反転させる石があるか
                 if self.stage[row-1,col+1] == -self.turn:
                     row_tmp = row-2
                     col_tmp = col+2
@@ -143,7 +125,6 @@ class App():
 
     def put_stone(self,row,col):
         check = False
-        #左側をひっくり返す
         if self.stage[row-1,col] == -self.turn:
             row_tmp = row-2
             col_tmp = col
@@ -154,7 +135,6 @@ class App():
                 self.stage[row_tmp:row+1,col_tmp] = self.turn
                 check = True
 
-        #右側をひっくり返す
         if self.stage[row+1,col] == -self.turn:
             row_tmp = row+2
             col_tmp = col
@@ -165,7 +145,6 @@ class App():
                 self.stage[row:row_tmp+1,col_tmp] = self.turn
                 check = True
 
-        #下側をひっくり返す
         if self.stage[row,col+1] == -self.turn:
             row_tmp = row
             col_tmp = col+2
@@ -176,7 +155,6 @@ class App():
                 self.stage[row,col:col_tmp+1] = self.turn
                 check = True
 
-        #上側をひっくり返す
         if self.stage[row,col-1] == -self.turn:
             row_tmp = row
             col_tmp = col-2
@@ -187,7 +165,6 @@ class App():
                 self.stage[row,col_tmp:col+1] = self.turn
                 check = True
 
-        #左下をひっくり返す
         counts = 2
         if self.stage[row-1,col+1] == -self.turn:
             row_tmp = row-2
@@ -201,7 +178,6 @@ class App():
                     self.stage[row-i,col+i] = self.turn
                 check = True
 
-        #左上をひっくり返す
         counts = 2
         if self.stage[row-1,col-1] == -self.turn:
             row_tmp = row-2
@@ -215,7 +191,6 @@ class App():
                     self.stage[row-i,col-i] = self.turn
                 check = True
         
-        #右下をひっくり返す
         counts = 2
         if self.stage[row+1,col+1] == -self.turn:
             row_tmp = row+2
@@ -229,7 +204,6 @@ class App():
                     self.stage[row+i,col+i] = self.turn
                 check = True
               
-        #右上をひっくり返す
         counts = 2
         if self.stage[row+1,col-1] == -self.turn:
             row_tmp = row+2
@@ -247,12 +221,16 @@ class App():
 
 
     def update(self):
+        EMPTY = 0
+        WHITE = -1
+        BLACK = 1
+        WALL = 2
+        BOARD_SIZE = 8
 
         if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT):
             self.x = pyxel.mouse_x
             self.y = pyxel.mouse_y
         
-            #盤面内をクリックした場合のアクション
             if 50 < self.x < 530 and 50 < self.y < 530 :
                 self.row = (self.x + 10)//60 
                 self.col = (self.y +10)//60
@@ -262,18 +240,15 @@ class App():
                         self.turn *= -1
                         self.check_pos = self.available_pos()
                         
-                        #黒のカウント
                         self.black_count = 0
                         self.white_count = 0
                         for row in range(1,BOARD_SIZE+1):
                             for col in range(1,BOARD_SIZE+1):
                                 if self.stage[row,col] == 1:
                                     self.black_count += 1
-                        #白のカウント
                                 if self.stage[row,col] == -1:
                                     self.white_count += 1
         
-            #PATHをクリックした場合のアクション
             if 550 < self.x < 690 and 400 < self.y < 460 and len(self.check_pos) == 0:
                 self.turn *= -1
                 self.check_pos = self.available_pos()
@@ -298,6 +273,11 @@ class App():
 
 
     def draw(self):
+        EMPTY = 0
+        WHITE = -1
+        BLACK = 1
+        WALL = 2
+        BOARD_SIZE = 8
         pyxel.cls(1)
         pyxel.rect(50,50,480,480,11)
         for i in range(50,535,60):
@@ -327,17 +307,17 @@ class App():
         pyxel.rect(545,45,170,100,9)
         pyxel.rect(550,50,160,90,B_color)
     
-        pyuni.text(560,60,"TURN",color)
-        pyuni.text(560,100,"{}".format(s),color)
+        pyxel.text(560,60,"TURN",color)
+        pyxel.text(560,100,"{}".format(s),color)
 
-        pyuni.text(560,180,"BLACK",7)
-        pyuni.text(560,220,"{}".format(self.black_count),7)
-        pyuni.text(560,300,"WHITE",7)
-        pyuni.text(560,340,"{}".format(self.white_count),7)
+        pyxel.text(560,180,"BLACK",7)
+        pyxel.text(560,220,"{}".format(self.black_count),7)
+        pyxel.text(560,300,"WHITE",7)
+        pyxel.text(560,340,"{}".format(self.white_count),7)
 
         pyxel.rect(545,395,150,70,14)
         pyxel.rect(550,400,140,60,13)
-        pyuni.text(560,410,"PATH",0)
+        pyxel.text(560,410,"PATH",0)
 
         if self.flag == 1 :
             pyxel.rect(80,80,420,420,9)
@@ -345,14 +325,14 @@ class App():
 
             pyxel.rect(160,300,260,100,14)
             pyxel.rect(170,310,240,80,13)
-            pyuni.text(200,330,"Restart",0)
+            pyxel.text(200,330,"Restart",0)
 
             if self.white_count>self.black_count:
-                pyuni.text(100,160,"WHITE Win!!",1)
+                pyxel.text(100,160,"WHITE Win!!",1)
             elif self.white_count<self.black_count:
-                pyuni.text(100,160,"BLACK Win!!",1)
+                pyxel.text(100,160,"BLACK Win!!",1)
             else:
-                pyuni.text(100,160,"EQUALL",1)
+                pyxel.text(100,160,"EQUALL",1)
 
 App()
 
